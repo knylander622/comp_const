@@ -26,23 +26,23 @@ int processString();
 newline         [\r]?[\n] //TODO
 whitespace      [\t ]+ //TODO
 integer         0|[1-9][0-9]* //TODO
-character       //TODO
+character       [^"\n]  //TODO
+letter          [a-z]|[A-Z] //TEMP REMOVE IF NEEDED
 
  /* String can contain any characters between the double quotes */
  /* other than a newline or unescaped doublequotes */
-*/
-string          //TODO
+string          \"{character}*\" //TODO
 
 
  /* If the end quote is not found in the same line the string is unterminated */
-untermstring    //TODO
+untermstring    \"{character}*{newline}
 
 comment         //TODO
 multlncomment   //TODO
 untermcomment   //TODO
 
-identifier      {letter}({letter}|{digit})* //TODO
-illidentifier   {digit}+{letter}+ //TODO: regular expression for an illegal identifier
+identifier      {letter}({letter}|{integer})* //TODO
+illidentifier   {integer}+{letter}+ //TODO: regular expression for an illegal identifier
 
 yylineno = 1;
 
