@@ -23,26 +23,27 @@ int processString();
 
 %}
 
-newline         [\r]?[\n] //TODO
-whitespace      [\t ]+ //TODO
-integer         0|[1-9][0-9]* //TODO
-character       [^"\n]  //TODO
-letter          [a-z]|[A-Z] //TEMP REMOVE IF NEEDED
+newline         [\r]?[\n] /*TODO*/
+whitespace      [\t ]+ /*TODO*/
+integerlead0    0[0-9]+
+integer         0|[1-9][0-9]* /*TODO*/
+character       [^"\n]  /* TODO */
+letter          [a-z]|[A-Z] /*TEMP REMOVE IF NEEDED*/
 
  /* String can contain any characters between the double quotes */
  /* other than a newline or unescaped doublequotes */
-string          \"{character}*\" //TODO
+string          \"{character}*\" /*TODO*/
 
 
  /* If the end quote is not found in the same line the string is unterminated */
 untermstring    \"{character}*{newline}
 
-comment         //TODO
-multlncomment   //TODO
-untermcomment   //TODO
+comment         /*TODO*/
+multlncomment   /*TODO*/
+untermcomment   /*TODO*/
 
-identifier      {letter}({letter}|{integer})* //TODO
-illidentifier   {integer}+{letter}+ //TODO: regular expression for an illegal identifier
+identifier      {letter}({letter}|{integer})* /*TODO*/
+illidentifier   {integer}+{letter}+ /*TODO*/: regular expression for an illegal identifier
 
 yylineno = 1;
 
@@ -92,24 +93,24 @@ yylineno = 1;
 "!"	  { updateCol(); return OPER_NOT; }
 
  /* Identifiers */;
-{identifier}	  { updateCol(); return ID; } //TODO
-{illidentifier}   { updateCol(); return ILLEGAL_TOK; }//TODO
+{identifier}	  { updateCol(); return ID; } /*TODO*/
+{illidentifier}   { updateCol(); return ILLEGAL_TOK; }/*TODO*/
 
  /* Constants */;
-{integer}         { updateCol(); return INTCONST; } //TODO
-{integerlead0}    { updateCol(); return ILLEGAL_TOK; } //TODO: "Integers may not have leading zeros"
-{character}       { updateCol(); return CHARCONST; } //TODO
+{integer}         { updateCol(); return INTCONST; } /*TODO*/
+{integerlead0}    { updateCol(); return ILLEGAL_TOK; } /*TODO*/: "Integers may not have leading zeros"
+{character}       { updateCol(); return CHARCONST; } /*TODO*/
 {string}          { updateCol(); return processString(); }
 {untermstring}    { updateCol(); yyerror = "Unterminated string"; return ERROR;}
 
  /* Comments */
-{comment}         { updateCol(); }//TODO
-{untermcomment} //TODO
-{multlncomment} //TODO
+{comment}         { updateCol(); }/*TODO*/
+{untermcomment} /*TODO*/
+{multlncomment} /*TODO*/
 
  /* Other */
-{newline}         { countLines(); }//TODO
-{whitespace}      { updateCol(); }//TODO
+{newline}         { countLines(); }/*TODO*/
+{whitespace}      { updateCol(); }/*TODO*/
 .               {return ILLEGAL_TOK;}
 
 %%
