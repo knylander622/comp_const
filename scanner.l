@@ -38,8 +38,8 @@ string          \"{character}*\" /*TODO*/
  /* If the end quote is not found in the same line the string is unterminated */
 untermstring    \"{character}*{newline}
 
-comment         /*TODO*/
-multlncomment   /*TODO*/
+comment         [/][/].* /*TODO*/
+multlncomment   [/][*].*[*][/] /*TODO*/
 untermcomment   /*TODO*/
 
 identifier      {letter}({letter}|{integer})* /*TODO*/
@@ -54,13 +54,13 @@ yylineno = 1;
  /* Keywords */
  /* TODO: Support all keywords in mC */
 
-"if"	  { updateCol(); return KWD_IF; }
+"if"	     { updateCol(); return KWD_IF; }
 "else"	  { updateCol(); return KWD_ELSE; }
 "while"	  { updateCol(); return KWD_WHILE; }
-"int"	  { updateCol(); return KWD_INT; }
-"string"  { updateCol(); return KWD_STRING; }
+"int"	     { updateCol(); return KWD_INT; }
+"string"   { updateCol(); return KWD_STRING; }
 "char"	  { updateCol(); return KWD_CHAR; }
-"return"  { updateCol(); return KWD_RETURN; }
+"return"   { updateCol(); return KWD_RETURN; }
 "void"	  { updateCol(); return KWD_VOID; }
 
  /* Operators */
@@ -68,12 +68,12 @@ yylineno = 1;
 
 "+"	  { updateCol(); return OPER_ADD; }
 "*"	  { updateCol(); return OPER_MUL; }
-"/"       { updateCol(); return OPER_DIV; }
+"/"     { updateCol(); return OPER_DIV; }
 "%"	  { updateCol(); return OPER_MOD; }
 "<"	  { updateCol(); return OPER_LT; }
 ">"	  { updateCol(); return OPER_GT; }
 "<="	  { updateCol(); return OPER_LTE; }
-">="  	  { updateCol(); return OPER_GTE; }
+">="    { updateCol(); return OPER_GTE; }
 "=="	  { updateCol(); return OPER_EQ; }
 "!="	  { updateCol(); return OPER_NEQ; }
 "="	  { updateCol(); return OPER_ASGN; }
@@ -85,9 +85,9 @@ yylineno = 1;
 ")"	  { updateCol(); return RPAREN; }
 ","  	  { updateCol(); return COMMA; }
 ";"  	  { updateCol(); return SEMICLN; }
-"@"       { updateCol(); return OPER_AT; }
+"@"     { updateCol(); return OPER_AT; }
 "++"	  { updateCol(); return OPER_INC; }
-"--"  	  { updateCol(); return OPER_DEC; }
+"--"    { updateCol(); return OPER_DEC; }
 "&&"	  { updateCol(); return OPER_AND; }
 "||"	  { updateCol(); return OPER_OR; }
 "!"	  { updateCol(); return OPER_NOT; }
@@ -98,7 +98,7 @@ yylineno = 1;
 
  /* Constants */;
 {integer}         { updateCol(); return INTCONST; } /*TODO*/
-{integerlead0}    { updateCol(); return ILLEGAL_TOK; } /*TODO*/: "Integers may not have leading zeros"
+{integerlead0}    { updateCol(); return ILLEGAL_TOK; } /*TODO*/
 {character}       { updateCol(); return CHARCONST; } /*TODO*/
 {string}          { updateCol(); return processString(); }
 {untermstring}    { updateCol(); yyerror = "Unterminated string"; return ERROR;}
