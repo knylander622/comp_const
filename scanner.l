@@ -23,29 +23,30 @@ int processString();
 
 %}
 
-newline         [\r]?[\n] /*TODO*/
-whitespace      [\t ]+ /*TODO*/
+newline         [\r]?[\n]
+whitespace      [\t ]+
+integer         0|[1-9][0-9]*
 integerlead0    0[0-9]+
-integer         0|[1-9][0-9]* /*TODO*/
-character       [^"\n]  /* TODO */
-letter          [a-z]|[A-Z] /*TEMP REMOVE IF NEEDED*/
+character       [^"\n]
+letter          [a-z]|[A-Z]
 
  /* String can contain any characters between the double quotes */
  /* other than a newline or unescaped doublequotes */
+
 string          \"{character}*\" /*TODO*/
 
 
  /* If the end quote is not found in the same line the string is unterminated */
 untermstring    \"{character}*{newline}
 
-comment         [/][/].* /*TODO*/
-multlncomment   [/][*].*[*][/] /*TODO*/
-untermcomment   /*TODO*/
+comment         [/][/].*
+multlncomment   [/][*].*[*][/]
+untermcomment   [/]
 
-identifier      {letter}({letter}|{integer})* /*TODO*/
-illidentifier   {integer}+{letter}+ /*TODO*/: regular expression for an illegal identifier
+identifier      {letter}({letter}|{integer})*
+illidentifier   {integer}+{letter}+
 
-yylineno = 1;
+/* yylineno = 1; */
 
 %%
 
@@ -54,63 +55,63 @@ yylineno = 1;
  /* Keywords */
  /* TODO: Support all keywords in mC */
 
-"if"	     { updateCol(); return KWD_IF; }
-"else"	  { updateCol(); return KWD_ELSE; }
-"while"	  { updateCol(); return KWD_WHILE; }
-"int"	     { updateCol(); return KWD_INT; }
-"string"   { updateCol(); return KWD_STRING; }
-"char"	  { updateCol(); return KWD_CHAR; }
-"return"   { updateCol(); return KWD_RETURN; }
-"void"	  { updateCol(); return KWD_VOID; }
+"if"      { updateCol(); return KWD_IF; }
+"else"    { updateCol(); return KWD_ELSE; }
+"while"   { updateCol(); return KWD_WHILE; }
+"int"     { updateCol(); return KWD_INT; }
+"string"  { updateCol(); return KWD_STRING; }
+"char"    { updateCol(); return KWD_CHAR; }
+"return"  { updateCol(); return KWD_RETURN; }
+"void"    { updateCol(); return KWD_VOID; }
 
  /* Operators */
  /* TODO: Support all operators in mC */
 
-"+"	  { updateCol(); return OPER_ADD; }
-"*"	  { updateCol(); return OPER_MUL; }
-"/"     { updateCol(); return OPER_DIV; }
-"%"	  { updateCol(); return OPER_MOD; }
-"<"	  { updateCol(); return OPER_LT; }
-">"	  { updateCol(); return OPER_GT; }
-"<="	  { updateCol(); return OPER_LTE; }
-">="    { updateCol(); return OPER_GTE; }
-"=="	  { updateCol(); return OPER_EQ; }
-"!="	  { updateCol(); return OPER_NEQ; }
-"="	  { updateCol(); return OPER_ASGN; }
-"["	  { updateCol(); return LSQ_BRKT; }
-"]"	  { updateCol(); return RSQ_BRKT; }
-"{"	  { updateCol(); return LCRLY_BRKT; }
-"}"	  { updateCol(); return RCRLY_BRKT; }
-"("  	  { updateCol(); return LPAREN; }
-")"	  { updateCol(); return RPAREN; }
-","  	  { updateCol(); return COMMA; }
-";"  	  { updateCol(); return SEMICLN; }
-"@"     { updateCol(); return OPER_AT; }
-"++"	  { updateCol(); return OPER_INC; }
-"--"    { updateCol(); return OPER_DEC; }
-"&&"	  { updateCol(); return OPER_AND; }
-"||"	  { updateCol(); return OPER_OR; }
-"!"	  { updateCol(); return OPER_NOT; }
+"+"       { updateCol(); return OPER_ADD; }
+"*"       { updateCol(); return OPER_MUL; }
+"/"       { updateCol(); return OPER_DIV; }
+"%"       { updateCol(); return OPER_MOD; }
+"<"       { updateCol(); return OPER_LT; }
+">"       { updateCol(); return OPER_GT; }
+"<="      { updateCol(); return OPER_LTE; }
+">="      { updateCol(); return OPER_GTE; }
+"=="      { updateCol(); return OPER_EQ; }
+"!="      { updateCol(); return OPER_NEQ; }
+"="       { updateCol(); return OPER_ASGN; }
+"["       { updateCol(); return LSQ_BRKT; }
+"]"       { updateCol(); return RSQ_BRKT; }
+"{"       { updateCol(); return LCRLY_BRKT; }
+"}"       { updateCol(); return RCRLY_BRKT; }
+"("       { updateCol(); return LPAREN; }
+")"       { updateCol(); return RPAREN; }
+","       { updateCol(); return COMMA; }
+";"       { updateCol(); return SEMICLN; }
+"@"       { updateCol(); return OPER_AT; }
+"++"      { updateCol(); return OPER_INC; }
+"--"      { updateCol(); return OPER_DEC; }
+"&&"      { updateCol(); return OPER_AND; }
+"||"      { updateCol(); return OPER_OR; }
+"!"       { updateCol(); return OPER_NOT; }
 
- /* Identifiers */;
-{identifier}	   { updateCol(); return ID; } /*TODO*/
-{illidentifier}   { updateCol(); return ILLEGAL_TOK; }/*TODO*/
+ /* Identifiers */
+{identifier}      { updateCol(); return ID; }
+{illidentifier}   { updateCol(); return ILLEGAL_TOK; }
 
- /* Constants */;
-{integer}         { updateCol(); return INTCONST; } /*TODO*/
-{integerlead0}    { updateCol(); return ILLEGAL_TOK; } /*TODO*/
-{character}       { updateCol(); return CHARCONST; } /*TODO*/
+ /* Constants */
+{integer}         { updateCol(); return INTCONST; }
+{integerlead0}    { updateCol(); return ILLEGAL_TOK; }
+{character}       { updateCol(); return CHARCONST; }
 {string}          { updateCol(); return processString(); }
-{untermstring}    { updateCol(); yyerror = "Unterminated string"; return ERROR;}
+{untermstring}    { updateCol(); yyerror = "Unterminated string"; return ERROR; }
 
  /* Comments */
-{comment}         { updateCol(); }/*TODO*/
-{untermcomment}   { yyerror = "Unterminated comment"; return ERROR }/*TODO*/
-{multlncomment}   { updateCol(); }
+{comment}         { updateCol(); }
+{untermcomment}   { updateCol(); yyerror = "Unterminated string"; return ERROR; }
+{multlncomment}   { countLines(); updateCol(); }
 
  /* Other */
-{newline}         { countLines(); }/*TODO*/
-{whitespace}      { updateCol(); }/*TODO*/
+{newline}         { countLines(); }
+{whitespace}      { updateCol(); }
 .               {return ILLEGAL_TOK;}
 
 %%
@@ -143,4 +144,25 @@ convert valid escape sequences into escaped characters
 (string[0] == '\\' and string[1] == 'n', then string[0] should be '\n')
 */
 int processString(){
+   int i = 1;
+
+   while (yytext[i] != '"' && yytext[i] != '\0') {
+      if (yytext[i] == '\\') {
+      i++;
+      if (yytext[i] == 'n' || yytext[i] == 't' ||
+         yytext[i] == '\\' || yytext[i] == '"') {
+         i++;
+      }
+      else {
+         yyerror = "Unrecognized escape character in String";
+         return ERROR;
+         }
+      }
+      else {
+         i++;
+      }
+    }
+
+    return STRCONST;
+}
 }
