@@ -23,7 +23,7 @@ int processString();
 
 %}
 
-newline         [\r]?[\n]
+newline         (\r?\n)
 whitespace      [\t ]+
 integer         0|[1-9][0-9]*
 integerlead0    0[0-9]+
@@ -33,7 +33,7 @@ letter          [a-z]|[A-Z]
  /* String can contain any characters between the double quotes */
  /* other than a newline or unescaped doublequotes */
 
-string          \"{character}*\" /*TODO*/
+string          \"{character}*\"
 
 
  /* If the end quote is not found in the same line the string is unterminated */
@@ -41,9 +41,9 @@ untermstring    \"{character}*{newline}
 
 comment         [/][/].*
 multlncomment   [/][*].*[*][/]
-untermcomment   [/]
+untermcomment   "/*"([^*]|\*+[^*/])*\*+?
 
-identifier      {letter}({letter}|{integer})*
+identifier      {letter}({letter}|{integer})*   
 illidentifier   {integer}+{letter}+
 
 /* yylineno = 1; */
@@ -106,7 +106,12 @@ illidentifier   {integer}+{letter}+
 
  /* Comments */
 {comment}         { updateCol(); }
-{untermcomment}   { updateCol(); yyerror = "Unterminated string"; return ERROR; }
+{untermcomment}   { for (int i = 0; yytext[i] != '\0'; i++) {
+                        if (yytext[i] == '\n') countLines();
+                        else updateCol();
+                    }
+                    yyerror = "Unterminated comment";
+                    return ERROR; }
 {multlncomment}   { countLines(); updateCol(); }
 
  /* Other */
@@ -164,5 +169,4 @@ int processString(){
     }
 
     return STRCONST;
-}
 }
