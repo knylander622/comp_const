@@ -93,7 +93,7 @@ yylineno = 1;
 "!"	  { updateCol(); return OPER_NOT; }
 
  /* Identifiers */;
-{identifier}	  { updateCol(); return ID; } /*TODO*/
+{identifier}	   { updateCol(); return ID; } /*TODO*/
 {illidentifier}   { updateCol(); return ILLEGAL_TOK; }/*TODO*/
 
  /* Constants */;
@@ -105,8 +105,8 @@ yylineno = 1;
 
  /* Comments */
 {comment}         { updateCol(); }/*TODO*/
-{untermcomment} /*TODO*/
-{multlncomment} /*TODO*/
+{untermcomment}   { yyerror = "Unterminated comment"; return ERROR }/*TODO*/
+{multlncomment}   { updateCol(); }
 
  /* Other */
 {newline}         { countLines(); }/*TODO*/
