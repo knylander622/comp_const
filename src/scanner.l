@@ -27,17 +27,18 @@ newline         (\r?\n)
 whitespace      [\t ]+
 integer         0|[1-9][0-9]*
 integerlead0    0[0-9]+
-character       [^"\n\t ]
+character       [^"\\\n?]
 letter          [a-z]|[A-Z]
+escape          \\.
 
  /* String can contain any characters between the double quotes */
  /* other than a newline or unescaped doublequotes */
 
-string          \"{character}*\"
-
+string          \"({character}|{escape})*\"
+untermstring_eof    \"({character}|{escape})*
 
  /* If the end quote is not found in the same line the string is unterminated */
-untermstring    \"{character}*{newline}
+untermstring    \"({character}|{escape})*{newline}
 
 comment         [/][/].*
 multlncomment   "/*"([^*]|\*+[^*/]|\n)*\*+\/
@@ -46,7 +47,7 @@ untermcomment   "/*"
 identifier      {letter}({letter}|{integer})*   
 illidentifier   {integer}+{letter}+
 
-/* yylineno = 1; */
+yylineno = 1; 
 
 %%
 
@@ -101,8 +102,23 @@ illidentifier   {integer}+{letter}+
 {integer}         { updateCol(); return INTCONST; }
 {integerlead0}    { updateCol(); return ILLEGAL_TOK; }
 {character}       { updateCol(); return CHARCONST; }
-{string}          { updateCol(); return processString(); }
-{untermstring}    { updateCol(); yyerror = "Unterminated string"; return ERROR; }
+{string}          { return processString(); }
+{untermstring} {
+    yycol = scancol;                 /* opening quote column */
+    yyerror = "String spans multiple lines";
+
+    /* advance through matched text */
+    for (int i = 0; yytext[i] != '\0'; i++) {
+        if (yytext[i] != '\n') scancol++;
+    }
+    return ERROR;
+}
+{untermstring_eof} {
+    yycol = scancol;                 /* opening quote column */
+    yyerror = "Unterminated string constant";
+    scancol += yyleng;
+    return ERROR;
+}
 
  /* Comments */
 {comment}         { updateCol(); }
@@ -122,7 +138,7 @@ illidentifier   {integer}+{letter}+
  /* Other */
 {newline}         { countLines(); }
 {whitespace}      { updateCol(); }
-.               {return ILLEGAL_TOK;}
+.                 { return ILLEGAL_TOK;}
 
 %%
 
@@ -133,7 +149,7 @@ Implement this function to keep track of column numbers
 */
 void updateCol(){
    yycol = scancol;
-   ++scancol;
+   scancol += yyleng;
 }
 
 /* TODO:
@@ -153,25 +169,47 @@ and
 convert valid escape sequences into escaped characters
 (string[0] == '\\' and string[1] == 'n', then string[0] should be '\n')
 */
-int processString(){
-   int i = 1;
+int processString() {
+    int startCol = scancol;   /* column of opening " */
+    int i = 1;                /* read index: skip opening quote */
+    int out = 0;              /* write index: overwrite yytext with contents only */
 
-   while (yytext[i] != '"' && yytext[i] != '\0') {
-      if (yytext[i] == '\\') {
-      i++;
-      if (yytext[i] == 'n' || yytext[i] == 't' ||
-         yytext[i] == '\\' || yytext[i] == '"') {
-         i++;
-      }
-      else {
-         yyerror = "Unrecognized escape character in String";
-         return ERROR;
-         }
-      }
-      else {
-         i++;
-      }
+    while (yytext[i] != '"' && yytext[i] != '\0') {
+        if (yytext[i] == '\\') {
+            int escCol = startCol + i + 1;   /* column of the '\' */
+
+            i++;  /* move to escaped char */
+            if (yytext[i] == '\0') {
+                yycol = startCol;
+                yyerror = "Unterminated string";
+                scancol += yyleng;
+                return ERROR;
+            }
+
+            if (yytext[i] == 'n')      { yytext[out++] = '\n'; i++; }
+            else if (yytext[i] == 't') { yytext[out++] = '\t'; i++; }
+            else if (yytext[i] == '\\'){ yytext[out++] = '\\'; i++; }
+            else if (yytext[i] == '"') { yytext[out++] = '"';  i++; }
+            else {
+                yycol = escCol;
+                yyerror = "Unrecognized escape character in String";
+                scancol += yyleng;
+                return ERROR;
+            }
+        } else {
+            yytext[out++] = yytext[i++];
+        }
     }
 
+    if (yytext[i] != '"') {
+        yycol = startCol;
+        yyerror = "Unterminated string";
+        scancol += yyleng;
+        return ERROR;
+    }
+
+    yytext[out] = '\0';  /* now yytext is just the contents */
+    yycol = startCol;    /* token starts at opening quote */
+    scancol += yyleng;   /* advance past the full original lexeme */
     return STRCONST;
 }
