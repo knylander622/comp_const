@@ -40,7 +40,7 @@ string          \"{character}*\"
 untermstring    \"{character}*{newline}
 
 comment         [/][/].*
-multlncomment   [/][*].*[*][/]
+multlncomment   untermcomment   "/*"([^*]|\*+[^*/])*\*+?
 untermcomment   "/*"([^*]|\*+[^*/])*\*+?
 
 identifier      {letter}({letter}|{integer})*   
@@ -112,7 +112,12 @@ illidentifier   {integer}+{letter}+
                     }
                     yyerror = "Unterminated comment";
                     return ERROR; }
-{multlncomment}   { countLines(); updateCol(); }
+{multlncomment}   {
+    for (int i = 0; yytext[i] != '\0'; i++) {
+        if (yytext[i] == '\n') countLines();
+        else updateCol();
+    }
+}
 
  /* Other */
 {newline}         { countLines(); }
