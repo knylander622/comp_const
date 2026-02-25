@@ -27,7 +27,7 @@ newline         (\r?\n)
 whitespace      [\t ]+
 integer         0|[1-9][0-9]*
 integerlead0    0[0-9]+
-character       [^"\n]
+character       [^"\n\t ]
 letter          [a-z]|[A-Z]
 
  /* String can contain any characters between the double quotes */
@@ -40,8 +40,8 @@ string          \"{character}*\"
 untermstring    \"{character}*{newline}
 
 comment         [/][/].*
-multlncomment   untermcomment   "/*"([^*]|\*+[^*/])*\*+?
-untermcomment   "/*"([^*]|\*+[^*/])*\*+?
+multlncomment   "/*"([^*]|\*+[^*/]|\n)*\*+\/
+untermcomment   "/*"
 
 identifier      {letter}({letter}|{integer})*   
 illidentifier   {integer}+{letter}+
