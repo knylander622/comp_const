@@ -28,6 +28,7 @@ whitespace      [\t ]+
 integer         0|[1-9][0-9]*
 integerlead0    0[0-9]+
 character       [^"\\\n?]
+charconst       \'([^\'\\\n]|\\[nt\"\\\'])\'
 letter          [a-z]|[A-Z]
 escape          \\.
 
@@ -103,6 +104,7 @@ yylineno = 1;
 {integerlead0}    { updateCol(); return ILLEGAL_TOK; }
 {newline}         { countLines(); }
 {whitespace}      { updateCol(); }
+{charconst}       { updateCol(); return CHARCONST;}
 {character}       { updateCol(); return CHARCONST; }
 {string}          { return processString(); }
 {untermstring} {
