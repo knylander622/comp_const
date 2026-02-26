@@ -42,7 +42,7 @@ untermstring    \"({character}|{escape})*{newline}
 
 comment         [/][/].*
 multlncomment   "/*"([^*]|\*+[^*/]|\n)*\*+\/
-untermcomment   "/*"
+untermcomment   "/*"([^*]|\*+[^*/]|\n)*
 
 identifier      {letter}({letter}|{integer})*   
 illidentifier   {integer}+{letter}+
@@ -101,20 +101,30 @@ yylineno = 1;
  /* Constants */
 {integer}         { updateCol(); return INTCONST; }
 {integerlead0}    { updateCol(); return ILLEGAL_TOK; }
+{newline}         { countLines(); }
+{whitespace}      { updateCol(); }
 {character}       { updateCol(); return CHARCONST; }
 {string}          { return processString(); }
 {untermstring} {
-    yycol = scancol;                 /* opening quote column */
+    int startLine = yylineno;
+    int startCol  = scancol;
+
     yyerror = "String spans multiple lines";
 
-    /* advance through matched text */
+    /* advance to bookkeep spot after error */
     for (int i = 0; yytext[i] != '\0'; i++) {
-        if (yytext[i] != '\n') scancol++;
+        if (yytext[i] == '\n') countLines();
+        else scancol++;
     }
+
+    /* error_location = token_start */
+    yylineno = startLine;
+    yycol = startCol;
+
     return ERROR;
 }
 {untermstring_eof} {
-    yycol = scancol;                 /* opening quote column */
+    yycol = scancol;                 /* opening quote col */
     yyerror = "Unterminated string constant";
     scancol += yyleng;
     return ERROR;
@@ -122,23 +132,29 @@ yylineno = 1;
 
  /* Comments */
 {comment}         { updateCol(); }
-{untermcomment}   { for (int i = 0; yytext[i] != '\0'; i++) {
-                        if (yytext[i] == '\n') countLines();
-                        else updateCol();
-                    }
-                    yyerror = "Unterminated comment";
-                    return ERROR; }
 {multlncomment}   {
     for (int i = 0; yytext[i] != '\0'; i++) {
         if (yytext[i] == '\n') countLines();
         else updateCol();
     }
 }
+{untermcomment} {
+    int startLine = yylineno;
+    int startCol  = scancol;
+
+    for (int i = 0; yytext[i] != '\0'; i++) {
+        if (yytext[i] == '\n') countLines();
+        else scancol++;
+    }
+
+    yylineno = startLine;
+    yycol    = startCol;
+    yyerror  = "Unterminated comment";
+    return ERROR;
+}
 
  /* Other */
-{newline}         { countLines(); }
-{whitespace}      { updateCol(); }
-.                 { return ILLEGAL_TOK;}
+.                 { updateCol(); return ILLEGAL_TOK;}
 
 %%
 
@@ -208,8 +224,8 @@ int processString() {
         return ERROR;
     }
 
-    yytext[out] = '\0';  /* now yytext is just the contents */
-    yycol = startCol;    /* token starts at opening quote */
-    scancol += yyleng;   /* advance past the full original lexeme */
+    yytext[out] = '\0';  /* yytext = contents */
+    yycol = startCol;    /* token start @ opening quote */
+    scancol += yyleng;   /* advance past full original lex */
     return STRCONST;
 }
