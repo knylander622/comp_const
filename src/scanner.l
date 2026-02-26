@@ -106,21 +106,15 @@ yylineno = 1;
 {character}       { updateCol(); return CHARCONST; }
 {string}          { return processString(); }
 {untermstring} {
-    int startLine = yylineno;
     int startCol  = scancol;
 
     yyerror = "String spans multiple lines";
-
-    /* advance to bookkeep spot after error */
-    for (int i = 0; yytext[i] != '\0'; i++) {
-        if (yytext[i] == '\n') countLines();
+    for(int i = 0; yytext[i] != '\0';i++){
+        if(yytext[i] == '\n') countLines();
         else scancol++;
     }
-
-    /* error_location = token_start */
-    yylineno = startLine;
     yycol = startCol;
-
+    /* error_location = token_start */
     return ERROR;
 }
 {untermstring_eof} {
