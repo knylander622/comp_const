@@ -27,7 +27,7 @@ newline         (\r?\n)
 whitespace      [\t ]+
 integer         0|[1-9][0-9]*
 integerlead0    0[0-9]+
-character       [^"\\\n?]
+character       [^"\\\n]
 charconst       \'([^\'\\\n]|\\[nt\"\\\'])\'
 letter          [a-z]|[A-Z]
 escape          \\.
@@ -105,7 +105,6 @@ yylineno = 1;
 {newline}         { countLines(); }
 {whitespace}      { updateCol(); }
 {charconst}       { updateCol(); return CHARCONST;}
-{character}       { updateCol(); return CHARCONST; }
 {string}          { return processString(); }
 {untermstring} {
     int startCol  = scancol;
@@ -193,7 +192,7 @@ int processString() {
             i++;  /* move to escaped char */
             if (yytext[i] == '\0') {
                 yycol = startCol;
-                yyerror = "Unterminated string";
+                yyerror = ""Unterminated string constant"";
                 scancol += yyleng;
                 return ERROR;
             }
@@ -215,7 +214,7 @@ int processString() {
 
     if (yytext[i] != '"') {
         yycol = startCol;
-        yyerror = "Unterminated string";
+        yyerror = "Unterminated string constant";
         scancol += yyleng;
         return ERROR;
     }
