@@ -192,7 +192,7 @@ int processString() {
             i++;  /* move to escaped char */
             if (yytext[i] == '\0') {
                 yycol = startCol;
-                yyerror = ""Unterminated string constant"";
+                yyerror = "Unterminated string constant";
                 scancol += yyleng;
                 return ERROR;
             }
